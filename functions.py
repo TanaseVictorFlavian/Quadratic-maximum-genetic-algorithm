@@ -46,11 +46,12 @@ def decode(a, b, p, bitString):
     return binary_to_number(a, d, bitString)
 
 
-def print_intervals(intervals: list):
+def print_intervals(intervals: list, file):
     # prints intervals from a list of interval ends
     for i in range(len(intervals) - 2):
-        print("\t[{:<20}, {:<20}]".format(intervals[i], intervals[i + 1]))
-    print("\t[{:<20}, {:<20}]".format(intervals[i + 1], 1))
+        file.write("\t[{:<20}, {:<20}]\n".format(
+            intervals[i], intervals[i + 1]))
+    file.write("\t[{:<20}, {:<20}]\n".format(intervals[i + 1], 1))
 
 
 def get_intervals(probabilities):
@@ -70,7 +71,7 @@ def binary_crossover(ch1: Chromosome, ch2: Chromosome, i):
     return(ch1.binary[: i] + ch2.binary[i:], ch2.binary[: i] + ch1.binary[i:])
 
 
-def crossover(ch1: Chromosome, ch2: Chromosome, a, b, c, p, gen_counter, c1, c2):
+def crossover(ch1: Chromosome, ch2: Chromosome, a, b, c, p, gen_counter, c1, c2, file):
     l = calculate_l(a, b, p)
     breaking_point = random.randint(0, l)
 
@@ -91,15 +92,15 @@ def crossover(ch1: Chromosome, ch2: Chromosome, a, b, c, p, gen_counter, c1, c2)
 
     # log the changes only for the first generation
     if gen_counter == 1:
-        print(
-            f"\t Recombinare intre cromozomul {ch1.index} si cromozomul {ch2.index}")
-        print(f"\t {ch1.binary} {ch2.binary} punct {breaking_point}")
-        print(f"Rezultat {child1.binary} {child2.binary}\n")
+        file.write(
+            f"\t\t Recombinare intre cromozomul {ch1.index} si cromozomul {ch2.index}\n")
+        file.write(f"\t\t {ch1.binary} {ch2.binary} punct {breaking_point}\n")
+        file.write(f"Rezultat {child1.binary} {child2.binary}\n\n")
 
     return (child1, child2)
 
 
-def mutation(ch: Chromosome, mutation_p: float, a, b, c, p, gen_counter, c1, c2):
+def mutation(ch: Chromosome, mutation_p: float, a, b, c, p, gen_counter, c1, c2, file):
     new_binary = list(ch.binary)
     mutation_checker = False
     for bit in new_binary:
@@ -119,14 +120,16 @@ def mutation(ch: Chromosome, mutation_p: float, a, b, c, p, gen_counter, c1, c2)
 
         # log the changes only for the first generation
         if gen_counter == 1:
-            print(f"\t{new_chromosome.index}")
-        
+            file.write(f"\t{new_chromosome.index}\n")
+
         return new_chromosome
 
     return ch
 
-def maxFitness(popultion : List[Chromosome]):
-    return max(popultion, key= lambda x : x.fitness).fitness
 
-def meanFitness(population : List[Chromosome]):
-    return (sum (x.fitness for x in population) / len(population))
+def maxFitness(popultion: List[Chromosome]):
+    return max(popultion, key=lambda x: x.fitness).fitness
+
+
+def meanFitness(population: List[Chromosome]):
+    return (sum(x.fitness for x in population) / len(population))

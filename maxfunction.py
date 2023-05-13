@@ -32,34 +32,34 @@ gen_counter = 1
 initial_population = [Chromosome(value=round(random.uniform(
     c1, c2 + 10 ** (-p)), p), index=i + 1) for i in range(pop_dimension)]
 
-print("Populatia initiala\n")
+g.write("Populatia initiala\n\n")
 
 for i, ch in enumerate(initial_population):
     ch.fitness = fc.quadratic(a, b, c, ch.value)
     ch.binary = fc.encode(c1, c2, p, ch.value)
-    print(ch)
+    g.write(f"{str(ch)}\n")
 
 """SELECTION STEP"""
 
 # sum of all fitnesses
 F = sum(ch.fitness for ch in initial_population)
 
-print("\nProbabilitati selectie\n")
+g.write("\nProbabilitati selectie\n\n")
 
 
 for ch in (initial_population):
     ch.probability = ch.fitness / F
-    print(f"\tcromozom {ch.index:4} P({ch.index}) = {ch.probability}")
+    g.write(f"\tcromozom {ch.index:4} P({ch.index}) = {ch.probability}\n")
 
-print("\nIntervale probabilitati selectie\n")
+g.write("\nIntervale probabilitati selectie\n\n")
 
 # selection intervals
 intervals = fc.get_intervals([ch.probability for ch in initial_population])
 
 # prints the intervals
-fc.print_intervals(intervals)
+fc.print_intervals(intervals, g)
 
-print("\nSelectia indivizilor\n")
+g.write("\nSelectia indivizilor\n\n")
 
 # here will be stored the new population
 new_population = []
@@ -78,17 +78,17 @@ for i in range(pop_dimension):
                                 old_chromosome.fitness, old_chromosome.probability)
 
     new_population.append(new_chromosome)
-    print(f"\tu = {u : <20} selectam cromozomul {interval_index :4}")
+    g.write(f"\tu = {u : <20} selectam cromozomul {interval_index :4}\n")
 
-print("\nDupa selectie\n")
+g.write("\nDupa selectie\n\n")
 
 for ch in new_population:
-    print(ch)
+    g.write(f"{str(ch)}\n")
 
 
 """CROSSOVER STEP"""
 
-print(f"\nProbabilitatea de incrucisare {crossover_p}\n")
+g.write(f"\nProbabilitatea de incrucisare {crossover_p}\n\n")
 
 breeding = []
 
@@ -103,42 +103,42 @@ for ch in new_population:
         m += 1
         print_string += " < 0.25 participa la crossover"
 
-    print(print_string)
+    g.write(f"{print_string}\n")
 
-print(f"\nIncrucisare\n")
+g.write(f"\nIncrucisare\n\n")
 
 m //= 2
 
 for i in range(m):
     child1, child2 = fc.crossover(
-        breeding[i], breeding[i + m], a, b, c, p, gen_counter, c1, c2)
+        breeding[i], breeding[i + m], a, b, c, p, gen_counter, c1, c2, g)
     # we saved the parent's index so we know where to replace them
     new_population[child1.index - 1] = child1
     new_population[child2.index - 1] = child2
 
-print("Dupa recombinare\n")
+g.write("Dupa recombinare\n\n")
 
 for ch in new_population:
-    print(ch)
+    g.write(f"{str(ch)}\n")
 
 """MUTATION STEP"""
 
-print(f"\nProbabilitatea de mutatie pentru fiecare gena {mutation_p}\n")
-print("\nAu fost modificati urmatorii cromozomi:\n")
+g.write(f"\nProbabilitatea de mutatie pentru fiecare gena {mutation_p}\n\n")
+g.write("\nAu fost modificati urmatorii cromozomi:\n\n")
 
 for ch in new_population:
-    new_ch = fc.mutation(ch, mutation_p, a, b, c, p, gen_counter, c1, c2)
+    new_ch = fc.mutation(ch, mutation_p, a, b, c, p, gen_counter, c1, c2, g)
     new_population[new_ch.index - 1] = new_ch
 
-print("\nDupa mutatie\n")
+g.write("\nDupa mutatie\n\n")
 
 for ch in new_population:
-    print(ch)
+    g.write(f"{str(ch)}\n")
 
-print("\nEvolutia maximului\n")
-print(f"    Generatia {gen_counter}")
-print(f"\tMax fitness = {fc.maxFitness(new_population)}")
-print(f"\tMean fitnes = {fc.meanFitness(new_population)}\n")
+g.write("\nEvolutia maximului\n\n")
+g.write(f"    Generatia {gen_counter}\n")
+g.write(f"\tMax fitness = {fc.maxFitness(new_population)}\n")
+g.write(f"\tMean fitnes = {fc.meanFitness(new_population)}\n\n")
 
 # we pass to the next generation and repeat the process
 
@@ -170,12 +170,7 @@ while(gen_counter <= num_gen):
 
         # the selected chromosome that will be selected
 
-        try:
-            old_chromosome = initial_population[interval_index - 1]
-        except IndexError:
-            print(f"Error: List index {interval_index - 1} is out of range.")
-            print(intervals)
-            print([ch.probability for ch in initial_population])
+        old_chromosome = initial_population[interval_index - 1]
 
         # the "new" chromosome that will have a new index in the new population
         new_chromosome = Chromosome(i + 1, old_chromosome.value, old_chromosome.binary,
@@ -202,7 +197,7 @@ while(gen_counter <= num_gen):
 
     for i in range(m):
         child1, child2 = fc.crossover(
-            breeding[i], breeding[i + m], a, b, c, p, gen_counter, c1, c2)
+            breeding[i], breeding[i + m], a, b, c, p, gen_counter, c1, c2, g)
         # we saved the parent's index so we know where to replace them
         new_population[child1.index - 1] = child1
         new_population[child2.index - 1] = child2
@@ -210,15 +205,12 @@ while(gen_counter <= num_gen):
     """MUTATION STEP"""
 
     for ch in new_population:
-        new_ch = fc.mutation(ch, mutation_p, a, b, c, p, gen_counter, c1, c2)
+        new_ch = fc.mutation(ch, mutation_p, a, b, c,
+                             p, gen_counter, c1, c2, g)
         new_population[new_ch.index - 1] = new_ch
 
-    print(f"    Generatia {gen_counter}")
-    print(f"\tMax fitness = {fc.maxFitness(new_population)}")
-    print(f"\tMean fitnes = {fc.meanFitness(new_population)}\n")
-
-    if fc.meanFitness(new_population) < 0:
-        for ch in new_population:
-            print(ch.value, ch.fitness)
+    g.write(f"    Generatia {gen_counter}\n")
+    g.write(f"\tMax fitness = {fc.maxFitness(new_population)}\n")
+    g.write(f"\tMean fitnes = {fc.meanFitness(new_population)}\n")
 
     gen_counter += 1
